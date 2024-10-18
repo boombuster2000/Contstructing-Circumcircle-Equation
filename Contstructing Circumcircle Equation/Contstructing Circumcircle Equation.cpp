@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+#define DEBUG_OUTPUT true
+
 struct Coords
 {
 	float x, y;
@@ -23,8 +25,9 @@ std::vector<Coords> GetPointsOfTriangle()
 		std::string xOrdinate = userInputedCoords.substr(0, commaIndex);
 		std::string yOrdinate = userInputedCoords.substr(commaIndex + 1);
 
-		std::cout << "X-Ordinate: " << xOrdinate << std::endl;
-		std::cout << "Y-Ordinate: " << yOrdinate << std::endl;
+		if (DEBUG_OUTPUT) std::cout << "X-Ordinate: " << xOrdinate << std::endl;
+		if (DEBUG_OUTPUT) std::cout << "Y-Ordinate: " << yOrdinate << std::endl;
+		if (DEBUG_OUTPUT) std::cout << "\n";
 
 		//Convert to float and append to vector.
 		pointsOfTriangle.push_back({ std::stof(xOrdinate), std::stof(xOrdinate) });
