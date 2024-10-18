@@ -1,12 +1,7 @@
-﻿// Contstructing Circumcircle Equation.cpp : Defines the entry point for the application.
-//
-
-#include "Contstructing Circumcircle Equation.h"
-
-using namespace std;
+﻿#include <iostream>
 
 int main()
 {
-	cout << "Hello CMake." << endl;
+	std::cout << "Hello CMake." << std::endl;
 	return 0;
 }
