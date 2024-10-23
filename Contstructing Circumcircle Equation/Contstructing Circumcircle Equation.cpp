@@ -9,7 +9,14 @@ struct Coords
 	float x, y;
 };
 
+struct LinearLine
+{
+	float gradient, yIntercept;
+};
+
+
 typedef std::vector<Coords> CoordsVector;
+typedef std::vector<LinearLine> LinearLinesVector;
 
 CoordsVector GetPointsOfTriangle()
 {
@@ -66,10 +73,48 @@ CoordsVector GetMidpointsBetweenfPointsOfTriangle(CoordsVector pointsOfTriangle)
 	return midpoints;
 }
 
+LinearLine GetLinearLineEquationBetweenTwoPoints(Coords pointA, Coords pointB)
+{
+	LinearLine line;
+
+	line.gradient = (pointA.y - pointB.y) / (pointA.x - pointB.x);
+	line.yIntercept = pointA.y - (line.gradient * pointA.x);
+
+	if (DEBUG_OUTPUT) std::cout << "Gradient: " << line.gradient << std::endl;
+	if (DEBUG_OUTPUT) std::cout << "Y-Intercept: " << line.yIntercept << std::endl;
+
+	return line;
+}
+
+LinearLine GetPerpendicularLinearEquation(LinearLine line, Coords pointA)
+{
+	LinearLine perpendicularLine;
+	perpendicularLine.gradient = pow((line.gradient * -1), -1);
+
+	perpendicularLine.yIntercept = pointA.y - (perpendicularLine.gradient * pointA.x);
+
+	if (DEBUG_OUTPUT) std::cout << "Gradient: " << perpendicularLine.gradient << std::endl;
+	if (DEBUG_OUTPUT) std::cout << "Y-Intercept: " << perpendicularLine.yIntercept << std::endl;
+
+	return perpendicularLine;
+}
+
+
 int main()
 {
 	CoordsVector pointsOfTriangle = GetPointsOfTriangle();
 	CoordsVector midpointsOfTriangle = GetMidpointsBetweenfPointsOfTriangle(pointsOfTriangle);
+
+	LinearLinesVector edgesOfTriangle;
+	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[0], pointsOfTriangle[1]));
+	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[0], pointsOfTriangle[2]));
+	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[1], pointsOfTriangle[2]));
+
+	LinearLinesVector perpendicularBisectorsOfTriangle;
+	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[0], midpointsOfTriangle[1]));
+	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[0], midpointsOfTriangle[2]));
+	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[1], midpointsOfTriangle[2]));
+
 
 	return 0;
 }
