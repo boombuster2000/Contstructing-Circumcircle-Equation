@@ -18,6 +18,11 @@ struct LinearLine
 typedef std::vector<Coords> CoordsVector;
 typedef std::vector<LinearLine> LinearLinesVector;
 
+void PrintLine(LinearLine line)
+{
+	std::cout << line.a << "y = " << line.b << "x + " << line.c << std::endl;
+}
+
 CoordsVector GetPointsOfTriangle()
 {
 	CoordsVector pointsOfTriangle;
@@ -93,7 +98,7 @@ LinearLine GetLinearLineEquationBetweenTwoPoints(Coords pointA, Coords pointB)
 
 	line.c = GetIntercept(line, pointA);
 
-	if (DEBUG_OUTPUT) std::cout << line.a << "y = " << line.b << "x + " << line.c << std::endl;
+	if (DEBUG_OUTPUT) PrintLine(line);
 
 	return line;
 }
@@ -104,10 +109,9 @@ LinearLine GetPerpendicularLinearEquation(LinearLine line, Coords pointA)
 	perpendicularLine.a = line.b;
 	perpendicularLine.b = line.a;
 
-	perpendicularLine.c = pointA.y - (perpendicularLine.b * pointA.x);
+	perpendicularLine.c = GetIntercept(perpendicularLine, pointA);
 
-	if (DEBUG_OUTPUT) std::cout << "Gradient: " << perpendicularLine.b << std::endl;
-	if (DEBUG_OUTPUT) std::cout << "Y-Intercept: " << perpendicularLine.c << std::endl;
+	if (DEBUG_OUTPUT) PrintLine(perpendicularLine);
 
 	return perpendicularLine;
 }
@@ -143,14 +147,16 @@ int main()
 	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[0], pointsOfTriangle[2]));
 	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[1], pointsOfTriangle[2]));
 
+
 	if (DEBUG_OUTPUT) std::cout << "\n";
 
-	return 0;
 	LinearLinesVector perpendicularBisectorsOfTriangle;
 	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[0], midpointsOfTriangle[1]));
 	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[0], midpointsOfTriangle[2]));
 	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[1], midpointsOfTriangle[2]));
 
+
+	return 0;
 	if (DEBUG_OUTPUT) std::cout << "\n";
 
 	CoordsVector intersections;
