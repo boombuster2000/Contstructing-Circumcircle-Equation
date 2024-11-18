@@ -11,9 +11,9 @@ struct Coords
 
 struct LinearLine
 {
-	float gradient, yIntercept;
+	// ay= bx + c
+	float a, b, c;
 };
-
 
 typedef std::vector<Coords> CoordsVector;
 typedef std::vector<LinearLine> LinearLinesVector;
@@ -73,15 +73,27 @@ CoordsVector GetMidpointsBetweenfPointsOfTriangle(CoordsVector pointsOfTriangle)
 	return midpoints;
 }
 
+float GetIntercept(LinearLine line, Coords pointA)
+{
+	return (line.a * pointA.y) - (line.b * pointA.x);
+}
+
 LinearLine GetLinearLineEquationBetweenTwoPoints(Coords pointA, Coords pointB)
 {
 	LinearLine line;
+	
+	line.a = 1;
+	line.b = (pointA.y - pointB.y) / (pointA.x - pointB.x);
 
-	line.gradient = (pointA.y - pointB.y) / (pointA.x - pointB.x);
-	line.yIntercept = pointA.y - (line.gradient * pointA.x);
+	if (isinf(line.b))
+	{
+		line.b = 1;
+		line.a = (pointA.x - pointB.x) / (pointA.y - pointB.y);
+	}
 
-	if (DEBUG_OUTPUT) std::cout << "Gradient: " << line.gradient << std::endl;
-	if (DEBUG_OUTPUT) std::cout << "Y-Intercept: " << line.yIntercept << std::endl;
+	line.c = GetIntercept(line, pointA);
+
+	if (DEBUG_OUTPUT) std::cout << line.a << "y = " << line.b << "x + " << line.c << std::endl;
 
 	return line;
 }
@@ -89,31 +101,63 @@ LinearLine GetLinearLineEquationBetweenTwoPoints(Coords pointA, Coords pointB)
 LinearLine GetPerpendicularLinearEquation(LinearLine line, Coords pointA)
 {
 	LinearLine perpendicularLine;
-	perpendicularLine.gradient = pow((line.gradient * -1), -1);
+	perpendicularLine.a = line.b;
+	perpendicularLine.b = line.a;
 
-	perpendicularLine.yIntercept = pointA.y - (perpendicularLine.gradient * pointA.x);
+	perpendicularLine.c = pointA.y - (perpendicularLine.b * pointA.x);
 
-	if (DEBUG_OUTPUT) std::cout << "Gradient: " << perpendicularLine.gradient << std::endl;
-	if (DEBUG_OUTPUT) std::cout << "Y-Intercept: " << perpendicularLine.yIntercept << std::endl;
+	if (DEBUG_OUTPUT) std::cout << "Gradient: " << perpendicularLine.b << std::endl;
+	if (DEBUG_OUTPUT) std::cout << "Y-Intercept: " << perpendicularLine.c << std::endl;
 
 	return perpendicularLine;
 }
 
+Coords GetIntersectionOfTwoLinearLines(LinearLine lineA, LinearLine lineB)
+{
+	Coords intersection;
+
+	intersection.x = (lineA.b > lineB.b) * (lineA.b - lineB.b) + (lineB.b > lineA.b) * (lineB.b - lineA.b);
+	intersection.x = (lineA.b > lineB.b) * ((lineB.c-lineA.c)/intersection.x) + (lineB.b > lineA.b)* ((lineA.c - lineB.c) / intersection.x);
+
+	intersection.y = (lineA.b * intersection.x) + lineA.c;
+
+	if (DEBUG_OUTPUT) std::cout << "(" << intersection.x << "," << intersection.y << ")" << std::endl;
+	return intersection;
+}
 
 int main()
 {
+	// -4, 2
+	// -5, 3
+	// -2, 6
 	CoordsVector pointsOfTriangle = GetPointsOfTriangle();
+	if (DEBUG_OUTPUT) std::cout << "\n";
+
 	CoordsVector midpointsOfTriangle = GetMidpointsBetweenfPointsOfTriangle(pointsOfTriangle);
+
+	if (DEBUG_OUTPUT) std::cout << "\n";
+
 
 	LinearLinesVector edgesOfTriangle;
 	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[0], pointsOfTriangle[1]));
 	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[0], pointsOfTriangle[2]));
 	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[1], pointsOfTriangle[2]));
 
+	if (DEBUG_OUTPUT) std::cout << "\n";
+
+	return 0;
 	LinearLinesVector perpendicularBisectorsOfTriangle;
 	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[0], midpointsOfTriangle[1]));
 	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[0], midpointsOfTriangle[2]));
 	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[1], midpointsOfTriangle[2]));
+
+	if (DEBUG_OUTPUT) std::cout << "\n";
+
+	CoordsVector intersections;
+	intersections.push_back(GetIntersectionOfTwoLinearLines(perpendicularBisectorsOfTriangle[0], perpendicularBisectorsOfTriangle[1]));
+	intersections.push_back(GetIntersectionOfTwoLinearLines(perpendicularBisectorsOfTriangle[0], perpendicularBisectorsOfTriangle[2]));
+	intersections.push_back(GetIntersectionOfTwoLinearLines(perpendicularBisectorsOfTriangle[1], perpendicularBisectorsOfTriangle[2]));
+
 
 
 	return 0;
