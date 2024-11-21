@@ -6,13 +6,18 @@
 
 struct Coords
 {
-	float x, y;
+	double x, y;
 };
 
 struct LinearLine
 {
 	// ay= bx + c
-	float a, b, c;
+	double a, b, c;
+};
+
+struct TriangleEdge {
+	LinearLine line, perpendicularBisector;
+	Coords midpoint, pointA, pointB;
 };
 
 typedef std::vector<Coords> CoordsVector;
@@ -23,62 +28,39 @@ void PrintLine(LinearLine line)
 	std::cout << line.a << "y = " << line.b << "x + " << line.c << std::endl;
 }
 
-CoordsVector GetPointsOfTriangle()
+Coords GetPointOfTriangleFromUser()
 {
-	CoordsVector pointsOfTriangle;
+	Coords point;
 
-	for (int i = 0; i < 3; i++) // Loops 3 times to get 3 points.
-	{
-		// Get coordinates from user input.
-		std::string userInputedCoords;
-		std::cout << "Coordinate " << i + 1 << " {x,y}: ";
-		std::cin >> userInputedCoords;
+	// Get coordinates from user input.
+	std::string userInputedCoords;
+	std::cout << "Coordinate {x,y}: ";
+	std::cin >> userInputedCoords;
 
-		// Split string into two parts seperated by comma.
-		size_t commaIndex = userInputedCoords.find(',');
-		std::string xOrdinate = userInputedCoords.substr(0, commaIndex);
-		std::string yOrdinate = userInputedCoords.substr(commaIndex + 1);
+	// Split string into two parts seperated by comma.
+	size_t commaIndex = userInputedCoords.find(',');
+	std::string xOrdinate = userInputedCoords.substr(0, commaIndex);
+	std::string yOrdinate = userInputedCoords.substr(commaIndex + 1);
 
-		//Convert to float and append to vector.
-		pointsOfTriangle.push_back({ std::stof(xOrdinate), std::stof(yOrdinate) });
-	}
+	//Convert to float and append to vector.
+	point = { std::stof(xOrdinate), std::stof(yOrdinate) };
 
-	if (DEBUG_OUTPUT) for (int i = 0; i < 3; i++) std::cout << "Point " << i << ": " << pointsOfTriangle[i].x << " " << pointsOfTriangle[i].y << std::endl;
+	if (DEBUG_OUTPUT) std::cout << point.x << " " << point.y << std::endl;
 
-	return pointsOfTriangle;
+	return point;
 }
 
 Coords CalculateMidpoint(Coords pointA, Coords pointB)
 {
 	Coords midpoint;
 
-	midpoint.x = pointA.x - pointB.x;
-	midpoint.x /= 2;
-	midpoint.x = midpoint.x * (-1 * (midpoint.x<0)); // To get absolute value (non-negative)
-	midpoint.x += pointA.x;
-
-	midpoint.y = pointA.y - pointB.y;
-	midpoint.y /= 2;
-	midpoint.y = midpoint.y * (-1 * (midpoint.y < 0)); // To get absolute value (non-negative)
-	midpoint.y += pointA.y;
+	midpoint.x = (pointA.x + pointB.x)/2;
+	midpoint.y = (pointA.y + pointB.y)/2;
 
 	return midpoint;
 }
 
-CoordsVector GetMidpointsBetweenfPointsOfTriangle(CoordsVector pointsOfTriangle)
-{
-	CoordsVector midpoints;
-
-	midpoints.push_back(CalculateMidpoint(pointsOfTriangle[0], pointsOfTriangle[1]));
-	midpoints.push_back(CalculateMidpoint(pointsOfTriangle[0], pointsOfTriangle[2]));
-	midpoints.push_back(CalculateMidpoint(pointsOfTriangle[1], pointsOfTriangle[2]));
-
-	if (DEBUG_OUTPUT) for (int i = 0; i<3; i++) std::cout << "Midpoint " << i << ": " << midpoints[i].x << " " << midpoints[i].y << std::endl;
-
-	return midpoints;
-}
-
-float GetIntercept(LinearLine line, Coords pointA)
+double GetIntercept(LinearLine line, Coords pointA)
 {
 	return (line.a * pointA.y) - (line.b * pointA.x);
 }
@@ -107,7 +89,7 @@ LinearLine GetPerpendicularLinearEquation(LinearLine line, Coords pointA)
 {
 	LinearLine perpendicularLine;
 	perpendicularLine.a = line.b;
-	perpendicularLine.b = line.a;
+	perpendicularLine.b = -line.a;
 
 	perpendicularLine.c = GetIntercept(perpendicularLine, pointA);
 
@@ -120,8 +102,25 @@ Coords GetIntersectionOfTwoLinearLines(LinearLine lineA, LinearLine lineB)
 {
 	Coords intersection;
 
-	intersection.x = (lineA.b > lineB.b) * (lineA.b - lineB.b) + (lineB.b > lineA.b) * (lineB.b - lineA.b);
-	intersection.x = (lineA.b > lineB.b) * ((lineB.c-lineA.c)/intersection.x) + (lineB.b > lineA.b)* ((lineA.c - lineB.c) / intersection.x);
+	double scaleFactor = lineA.a / lineB.a;
+
+	lineB.a *= scaleFactor;
+	lineB.b *= scaleFactor;
+	lineB.c *= scaleFactor;
+
+	if (lineA.b > lineB.b)
+	{
+		intersection.x = lineA.b - lineB.b;
+		double temp = lineB.c - lineA.c;
+
+		intersection.x /= temp;
+	}
+	else {
+		intersection.x = lineB.b - lineA.b;
+		double temp = lineA.c - lineB.c;
+
+		intersection.x /= temp;
+	}
 
 	intersection.y = (lineA.b * intersection.x) + lineA.c;
 
@@ -134,37 +133,56 @@ int main()
 	// -4, 2
 	// -5, 3
 	// -2, 6
-	CoordsVector pointsOfTriangle = GetPointsOfTriangle();
+
+	std::vector<TriangleEdge> triangleEdges = { TriangleEdge{},  TriangleEdge{}, TriangleEdge{} };
+
+	CoordsVector points;
+
+	for (int i =0; i<3; i++) 
+	{
+		 points.push_back(GetPointOfTriangleFromUser());
+	}
+
+	triangleEdges[0].pointA = points[0];
+	triangleEdges[0].pointB = points[1];
+
+	triangleEdges[1].pointA = points[0];
+	triangleEdges[1].pointB = points[2];
+
+	triangleEdges[2].pointA = points[1];
+	triangleEdges[2].pointB = points[2];
+
 	if (DEBUG_OUTPUT) std::cout << "\n";
 
-	CoordsVector midpointsOfTriangle = GetMidpointsBetweenfPointsOfTriangle(pointsOfTriangle);
+	for (int i =0; i<triangleEdges.size(); i++)
+	{
+		triangleEdges[i].midpoint = CalculateMidpoint(triangleEdges[i].pointA, triangleEdges[i].pointB);
+	}
 
 	if (DEBUG_OUTPUT) std::cout << "\n";
 
-
-	LinearLinesVector edgesOfTriangle;
-	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[0], pointsOfTriangle[1]));
-	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[0], pointsOfTriangle[2]));
-	edgesOfTriangle.push_back(GetLinearLineEquationBetweenTwoPoints(pointsOfTriangle[1], pointsOfTriangle[2]));
-
+	for (int i = 0; i < triangleEdges.size(); i++)
+	{
+		triangleEdges[i].line = GetLinearLineEquationBetweenTwoPoints(triangleEdges[i].pointA, triangleEdges[i].pointB);
+	}
 
 	if (DEBUG_OUTPUT) std::cout << "\n";
 
-	LinearLinesVector perpendicularBisectorsOfTriangle;
-	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[0], midpointsOfTriangle[1]));
-	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[0], midpointsOfTriangle[2]));
-	perpendicularBisectorsOfTriangle.push_back(GetPerpendicularLinearEquation(edgesOfTriangle[1], midpointsOfTriangle[2]));
+	for (int i = 0; i < triangleEdges.size(); i++)
+	{
+		triangleEdges[i].perpendicularBisector = GetPerpendicularLinearEquation(triangleEdges[i].line, triangleEdges[i].midpoint);
+	}
 
 
-	return 0;
 	if (DEBUG_OUTPUT) std::cout << "\n";
 
 	CoordsVector intersections;
-	intersections.push_back(GetIntersectionOfTwoLinearLines(perpendicularBisectorsOfTriangle[0], perpendicularBisectorsOfTriangle[1]));
-	intersections.push_back(GetIntersectionOfTwoLinearLines(perpendicularBisectorsOfTriangle[0], perpendicularBisectorsOfTriangle[2]));
-	intersections.push_back(GetIntersectionOfTwoLinearLines(perpendicularBisectorsOfTriangle[1], perpendicularBisectorsOfTriangle[2]));
 
-
+	intersections.push_back(GetIntersectionOfTwoLinearLines(triangleEdges[0].perpendicularBisector, triangleEdges[1].perpendicularBisector));
+	intersections.push_back(GetIntersectionOfTwoLinearLines(triangleEdges[0].perpendicularBisector, triangleEdges[2].perpendicularBisector));
+	intersections.push_back(GetIntersectionOfTwoLinearLines(triangleEdges[1].perpendicularBisector, triangleEdges[2].perpendicularBisector));
 
 	return 0;
 }
+
+
