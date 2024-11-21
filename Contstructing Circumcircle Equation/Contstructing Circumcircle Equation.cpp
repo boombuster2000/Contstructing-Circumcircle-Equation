@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#define DEBUG_OUTPUT true
+#define DEBUG_OUTPUT false
 
 struct Coords
 {
@@ -18,6 +18,16 @@ struct LinearLine
 struct TriangleEdge {
 	LinearLine line, perpendicularBisector;
 	Coords midpoint, pointA, pointB;
+};
+
+struct CircleEquation {
+	// r^2 = (x - xCoord)^2 + (y - yCoord)^2
+	Coords centreOfCircle;
+	double radius;
+
+	std::string ToString() {
+		return "(x - " + std::to_string(centreOfCircle.x) + ")^2 + (y - " + std::to_string(centreOfCircle.y) + ")^2 = " + std::to_string(pow(radius,2));
+	}
 };
 
 typedef std::vector<Coords> CoordsVector;
@@ -119,6 +129,18 @@ Coords GetIntersectionOfTwoLinearLines(LinearLine lineA, LinearLine lineB)
 	return intersection;
 }
 
+CircleEquation GenerateCircleEquation(Coords centreOfCircle, Coords pointOnCircumference) {
+	CircleEquation circleEquation;
+
+	circleEquation.centreOfCircle = centreOfCircle;
+
+	double xDistance = pow((centreOfCircle.x - pointOnCircumference.x), 2);
+	double yDistance = pow((centreOfCircle.y - pointOnCircumference.y), 2);
+	circleEquation.radius = sqrt(xDistance + yDistance);
+
+	return circleEquation;
+}
+
 int main()
 {
 	// -4, 2
@@ -173,6 +195,10 @@ int main()
 	intersections.push_back(GetIntersectionOfTwoLinearLines(triangleEdges[0].perpendicularBisector, triangleEdges[2].perpendicularBisector));
 	intersections.push_back(GetIntersectionOfTwoLinearLines(triangleEdges[1].perpendicularBisector, triangleEdges[2].perpendicularBisector));
 
+	CircleEquation circleEquation = GenerateCircleEquation(intersections[0], triangleEdges[0].pointA);
+	
+	std::cout << circleEquation.ToString() << std::endl;
+	
 	return 0;
 }
 
