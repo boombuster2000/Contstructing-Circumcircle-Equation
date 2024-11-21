@@ -104,25 +104,16 @@ Coords GetIntersectionOfTwoLinearLines(LinearLine lineA, LinearLine lineB)
 
 	double scaleFactor = lineA.a / lineB.a;
 
+	// Finding new coefficients.
 	lineB.a *= scaleFactor;
 	lineB.b *= scaleFactor;
 	lineB.c *= scaleFactor;
 
-	if (lineA.b > lineB.b)
-	{
-		intersection.x = lineA.b - lineB.b;
-		double temp = lineB.c - lineA.c;
+	double xCoefficient = lineA.b - lineB.b;
+	double c = lineB.c - lineA.c;
 
-		intersection.x /= temp;
-	}
-	else {
-		intersection.x = lineB.b - lineA.b;
-		double temp = lineA.c - lineB.c;
-
-		intersection.x /= temp;
-	}
-
-	intersection.y = (lineA.b * intersection.x) + lineA.c;
+	intersection.x = c / xCoefficient;
+	intersection.y = ((lineA.b * intersection.x) + lineA.c) / lineA.a;
 
 	if (DEBUG_OUTPUT) std::cout << "(" << intersection.x << "," << intersection.y << ")" << std::endl;
 	return intersection;
