@@ -170,22 +170,9 @@ int main()
 	for (int i =0; i<triangleEdges.size(); i++)
 	{
 		triangleEdges[i].midpoint = CalculateMidpoint(triangleEdges[i].pointA, triangleEdges[i].pointB);
-	}
-
-	if (DEBUG_OUTPUT) std::cout << "\n";
-
-	for (int i = 0; i < triangleEdges.size(); i++)
-	{
 		triangleEdges[i].line = GetLinearLineEquationBetweenTwoPoints(triangleEdges[i].pointA, triangleEdges[i].pointB);
-	}
-
-	if (DEBUG_OUTPUT) std::cout << "\n";
-
-	for (int i = 0; i < triangleEdges.size(); i++)
-	{
 		triangleEdges[i].perpendicularBisector = GetPerpendicularLinearEquation(triangleEdges[i].line, triangleEdges[i].midpoint);
 	}
-
 
 	if (DEBUG_OUTPUT) std::cout << "\n";
 
