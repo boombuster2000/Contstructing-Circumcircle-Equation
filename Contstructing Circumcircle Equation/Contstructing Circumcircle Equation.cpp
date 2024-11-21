@@ -31,7 +31,6 @@ struct CircleEquation {
 };
 
 typedef std::vector<Coords> CoordsVector;
-typedef std::vector<LinearLine> LinearLinesVector;
 
 void PrintLine(LinearLine line)
 {
@@ -167,7 +166,7 @@ int main()
 
 	if (DEBUG_OUTPUT) std::cout << "\n";
 
-	for (int i =0; i<triangleEdges.size(); i++)
+	for (int i = 0; i<triangleEdges.size(); i++)
 	{
 		triangleEdges[i].midpoint = CalculateMidpoint(triangleEdges[i].pointA, triangleEdges[i].pointB);
 		triangleEdges[i].line = GetLinearLineEquationBetweenTwoPoints(triangleEdges[i].pointA, triangleEdges[i].pointB);
